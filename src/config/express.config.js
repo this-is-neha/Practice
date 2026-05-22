@@ -1,9 +1,7 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const helmet = require("helmet");
-const cors = require("cors"); //
+const cors = require("cors");
 const Joi = require("joi");
-
 require("./db.config");
 const mainRouter = require("./routing.config");
 
@@ -13,10 +11,11 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: ["https://eclectic-entremet-69d9a6.netlify.app","http://localhost:5173"],
+    origin: ["http://localhost:5173"],
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,15 +23,16 @@ app.use('/assets', express.static('./public/'));
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Complaint Register backend is live 🚀",
+    message: "Salon Booking System backend is live 🚀",
   });
 });
 
 console.log("This is Neha");
 
+
 app.use(mainRouter);
 
-// ❌ 404 Handler
+
 app.use((req, res, next) => {
   next({
     code: 404,
@@ -40,13 +40,16 @@ app.use((req, res, next) => {
   });
 });
 
-// 🚨 Global Error Handler
 app.use((error, req, res, next) => {
-  console.log("Mongoose error:", error instanceof mongoose.MongooseError);
+  
+  console.error("====== System Error Intercepted ======");
+  console.error(error);
 
-  let statusCode = error.code || 500;
+
+  let statusCode = typeof error.code === 'number' ? error.code : 500;
   let data = error.data || null;
   let msg = error.message || "Internal server error";
+
 
   if (error instanceof Joi.ValidationError) {
     statusCode = 422;
@@ -60,14 +63,23 @@ app.use((error, req, res, next) => {
     }
   }
 
-  if (+statusCode === 11000) {
+
+  if (error.code === '23505') {
     statusCode = 400;
+    msg = "Validation Failed: A record with this unique value already exists.";
     data = {};
-    const fields = Object.keys(error.keyPattern);
-    fields.forEach((fieldname) => {
-      data[fieldname] = `${fieldname} should be unique`;
-    });
-    msg = "Validation Failed";
+    
+    if (error.detail) {
+      const match = error.detail.match(/\((.*?)\)=\((.*?)\)/);
+      if (match && match[1]) {
+        data[match[1]] = `${match[1]} must be completely unique`;
+      }
+    }
+  }
+
+  if (error.code === '22P02') {
+    statusCode = 400;
+    msg = "Database Constraint Error: Provided input type mapping or enum option value is invalid.";
   }
 
   res.status(statusCode).json({
