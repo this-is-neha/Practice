@@ -1,15 +1,3 @@
-// const express = require("express");
-// const appointmentRoute = express.Router();
-// const appointmentCtrl = require("./appointment.controller");
-// const adminCheck =require('../../middleware/auth.middleware')
-// appointmentRoute.post("/",appointmentCtrl.create);
-// appointmentRoute.get("/", appointmentCtrl.listAll);
-// appointmentRoute.patch("/:id",appointmentCtrl.update);
-// appointmentRoute.delete("/:id",appointmentCtrl.deleteAppointment);
-// appointmentRoute.get("/:id", appointmentCtrl.getByCustomer);
-
-// module.exports = appointmentRoute;
-
 
 const express = require("express");
 const appointmentRoute = express.Router();
